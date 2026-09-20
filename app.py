@@ -12,7 +12,7 @@ import re
 import requests
 import time
 import random
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 
 # ─── 1000 Pre-defined Mobile Numbers (auto-picked randomly) ─────
 
@@ -576,23 +576,18 @@ def get_pan_by_aadhaar(aadhaar):
                 'credit': 'Darkdeveloper02'
             }), 500
         
+        # ─── Clean response ───
         response = {
             'success': result['found'],
             'aadhaar': result['aadhaar'],
             'pan_found': result['found'],
-            'status': result['status'],
             'credit': 'Darkdeveloper02',
         }
         
-        if result.get('partial_pan'):
-            response['partial_pan'] = result['partial_pan']
-        if result.get('full_pan'):
-            response['full_pan'] = result['full_pan']
-        
-        if result.get('payment_url'):
-            amt_match = re.search(r'amount=(\d+)', result['payment_url'])
-            if amt_match:
-                response['payment_amount'] = int(amt_match.group(1))
+        # PAN value (full ya partial jo bhi mile) 'pan' field me
+        pan_value = result.get('full_pan') or result.get('partial_pan')
+        if pan_value:
+            response['pan'] = pan_value
         
         status_code = 200 if result['found'] else 404
         return jsonify(response), status_code
